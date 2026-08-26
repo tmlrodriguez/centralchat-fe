@@ -1,25 +1,35 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+
+import AppLayout from "../components/layout/AppLayout.jsx";
+import ProtectedRoute from "../components/routing/ProtectedRoute.jsx";
+import AdministrationPage from "../pages/administration/AdministrationPage.jsx";
+import AuditEventsPage from "../pages/auditing/AuditEventsPage.jsx";
+import LoginPage from "../pages/auth/LoginPage.jsx";
+import DashboardPage from "../pages/dashboard/DashboardPage.jsx";
+import MonitoringPage from "../pages/monitoring/MonitoringPage.jsx";
+
+
 /**
  * AppRoutes
  *
  * Description:
- * - Define the primary client-side routing structure for the CentralChat frontend.
- * - Redirect the application root to the login route.
- * - Provide the initial login and authenticated application entry routes.
- * - Redirect unknown routes back to the login screen.
+ * - Define the main CentralChat application routes.
  *
  * Notes:
- * - Route protection is not implemented yet.
- * - The current route elements are temporary placeholders and will be replaced by dedicated page components.
- * - Authentication state must eventually determine whether users may access protected application routes.
+ * - Authenticated application routes are protected.
  */
 function AppRoutes() {
     return (
         <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<h1>CentralChat Login</h1>} />
-            <Route path="/app" element={<h1>CentralChat</h1>} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/app" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route index element={<DashboardPage />} />
+                <Route path="monitoring" element={<MonitoringPage />} />
+                <Route path="administration" element={<AdministrationPage />} />
+                <Route path="auditing" element={<AuditEventsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }
