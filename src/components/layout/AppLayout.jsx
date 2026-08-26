@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext.jsx";
+
+import SideBar from "./SideBar.jsx";
+import TopBar from "./TopBar.jsx";
+
 import styles from "./AppLayout.module.css";
+
 
 /**
  * AppLayout
@@ -10,10 +16,8 @@ import styles from "./AppLayout.module.css";
  * - Proporcionar la estructura principal de la aplicación autenticada.
  *
  * Notes:
- * - Renderiza navegación lateral en escritorio.
- * - Renderiza un menú deslizante en dispositivos móviles.
+ * - Coordina la navegación lateral, barra superior y menú móvil.
  */
-
 function AppLayout() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
@@ -22,17 +26,39 @@ function AppLayout() {
 
     const userName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username;
 
+
+    /**
+     * handleLogout
+     *
+     * Description:
+     * - Cerrar la sesión activa y regresar al inicio de sesión.
+     */
     async function handleLogout() {
         setIsMobileMenuOpen(false);
+
         await logout();
+
         navigate("/login", { replace: true });
     }
 
 
+    /**
+     * toggleMobileMenu
+     *
+     * Description:
+     * - Alternar la visibilidad del menú móvil.
+     */
     function toggleMobileMenu() {
         setIsMobileMenuOpen((currentValue) => !currentValue);
     }
 
+
+    /**
+     * closeMobileMenu
+     *
+     * Description:
+     * - Cerrar el menú móvil.
+     */
     function closeMobileMenu() {
         setIsMobileMenuOpen(false);
     }
@@ -67,102 +93,19 @@ function AppLayout() {
                 />
             )}
 
-            <aside className={`${styles.sidebar} ${isMobileMenuOpen ? styles.sidebarOpen : ""}`}>
-                <div className={styles.sidebarHeader}>
-                    <div className={styles.brand}>
-                        <div className={styles.brandMark}>C</div>
-
-                        <div className={styles.brandContent}>
-                            <span className={styles.brandName}>CentralChat</span>
-                            <span className={styles.brandDescription}>Centro de monitoreo</span>
-                        </div>
-                    </div>
-
-                    <button
-                        className={styles.mobileCloseButton}
-                        type="button"
-                        onClick={closeMobileMenu}
-                        aria-label="Cerrar menú"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                <nav className={styles.navigation}>
-                    <span className={styles.navigationTitle}>Principal</span>
-
-                    <NavLink
-                        to="/app"
-                        end
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) => `${styles.navigationItem} ${isActive ? styles.navigationItemActive : ""}`}
-                    >
-                        <span className={styles.navigationIcon}>▦</span>
-                        <span>Dashboard</span>
-                    </NavLink>
-
-                    <NavLink
-                        to="/app/monitoring"
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) => `${styles.navigationItem} ${isActive ? styles.navigationItemActive : ""}`}
-                    >
-                        <span className={styles.navigationIcon}>◉</span>
-                        <span>Monitoreo</span>
-                    </NavLink>
-
-                    <span className={styles.navigationTitle}>Gestión</span>
-
-                    <NavLink
-                        to="/app/administration"
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) => `${styles.navigationItem} ${isActive ? styles.navigationItemActive : ""}`}
-                    >
-                        <span className={styles.navigationIcon}>⚙</span>
-                        <span>Administración</span>
-                    </NavLink>
-
-                    <NavLink
-                        to="/app/auditing"
-                        onClick={closeMobileMenu}
-                        className={({ isActive }) => `${styles.navigationItem} ${isActive ? styles.navigationItemActive : ""}`}
-                    >
-                        <span className={styles.navigationIcon}>⌕</span>
-                        <span>Auditoría</span>
-                    </NavLink>
-                </nav>
-
-                <div className={styles.sidebarFooter}>
-                    <div className={styles.userSummary}>
-                        <div className={styles.userAvatar}>
-                            {(user?.first_name || user?.username || "U").charAt(0).toUpperCase()}
-                        </div>
-
-                        <div className={styles.userInformation}>
-                            <strong>{userName}</strong>
-                            <span>{user?.role || "Usuario"}</span>
-                        </div>
-                    </div>
-
-                    <button className={styles.mobileLogoutButton} type="button" onClick={handleLogout}>
-                        Cerrar sesión
-                    </button>
-                </div>
-            </aside>
+            <SideBar
+                user={user}
+                userName={userName}
+                isMobileMenuOpen={isMobileMenuOpen}
+                closeMobileMenu={closeMobileMenu}
+                handleLogout={handleLogout}
+            />
 
             <div className={styles.mainArea}>
-                <header className={styles.topbar}>
-                    <span className={styles.topbarApplication}>CentralChat</span>
-
-                    <div className={styles.topbarActions}>
-                        <div className={styles.topbarUser}>
-                            <span className={styles.topbarUserName}>{userName}</span>
-                        </div>
-
-                        <button className={styles.logoutButton} type="button" onClick={handleLogout}>
-                            Cerrar sesión
-                        </button>
-                    </div>
-                </header>
+                <TopBar
+                    userName={userName}
+                    handleLogout={handleLogout}
+                />
 
                 <main className={styles.content}>
                     <Outlet />
