@@ -1,32 +1,38 @@
 import { Navigate } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext.jsx";
+
 
 /**
  * ProtectedRoute
  *
  * Description:
- * - Restrict access to routes that require authentication.
+ * - Restringir rutas según autenticación y roles permitidos.
  *
  * Notes:
- * - Unauthenticated users are redirected to the login page.
+ * - Los usuarios sin el rol requerido son enviados a su sección correspondiente.
  */
-function ProtectedRoute({ children }) {
-    const {
-        isAuthenticated,
-        isLoading,
-    } = useAuth();
+function ProtectedRoute({ children, allowedRoles = [] }) {
+    const { user, isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
         return null;
     }
 
     if (!isAuthenticated) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-            />
-        );
+        return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+        if (user?.role === "ADMINISTRATOR") {
+            return <Navigate to="/app/administration/organization" replace />;
+        }
+
+        if (user?.role === "MONITOR") {
+            return <Navigate to="/app" replace />;
+        }
+
+        return <Navigate to="/login" replace />;
     }
 
     return children;
